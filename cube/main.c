@@ -88,7 +88,7 @@ int main(void)
 
     glEnable(GL_DEPTH_TEST);
 
-    GLuint shaderProgram = CompileShader("vertexShader.glsl", "fragmentShader.glsl");
+    GLuint shaderProgram = CompileShader("vertex.shader", "fragment.shader");
 
     // 36 Vertices for a full 3d cube (xyz position + rgb color)
     float vertices[] = {

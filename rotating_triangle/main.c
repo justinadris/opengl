@@ -75,7 +75,7 @@ int main() {
         return 1;
     }
 
-    GLuint program = compile_program("vertexShader.glsl", "fragmentShader.glsl");
+    GLuint program = compile_program("vertex.shader", "fragment.shader");
 
     float vertices[] = {
         0.0f,  0.5f, 0.0f,

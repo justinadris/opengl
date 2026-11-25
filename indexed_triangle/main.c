@@ -91,7 +91,7 @@ int main() {
         1, 2, 3   // second triangle
     };
     
-    GLuint program = compile_program("vertexShader.glsl", "fragmentShader.glsl");
+    GLuint program = compile_program("vertex.shader", "fragment.shader");
     
     GLuint vao, vbo, ibo;
     glGenVertexArrays(1, &vao);

@@ -70,7 +70,7 @@ int main(void) {
 
     glewInit();
 
-    GLuint program = compile_program("vertexShader.glsl", "fragmentShader.glsl");
+    GLuint program = compile_program("vertex.shader", "fragment.shader");
 
     float vertices[] = {
          // position         // color           // texcoord

@@ -4,8 +4,7 @@
 
 #define BUFFER_SIZE 8192
 
-const char* get_filename(const char* path)
-{
+const char* get_filename(const char* path) {
     const char* slash = strrchr(path, '/');
 #ifdef _WIN32
     const char* backslash = strrchr(path, '\\');
@@ -15,8 +14,7 @@ const char* get_filename(const char* path)
     return slash ? slash + 1 : path;
 }
 
-int write(const char* source, const char* destination)
-{
+int write(const char* source, const char* destination) {
     const char* src_path = source;
     const char* dst_dir  = destination;
     const char* filename = get_filename(src_path);
@@ -25,15 +23,13 @@ int write(const char* source, const char* destination)
     snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, filename);
 
     FILE* src = fopen(src_path, "rb");
-    if (!src)
-    {
+    if (!src) {
         perror("Failed to open source file");
         return 1;
     }
 
     FILE* dst = fopen(dst_path, "wb");
-    if (!dst)
-    {
+    if (!dst) {
         perror("Failed to open destination file");
         fclose(src);
         return 1;
@@ -42,10 +38,8 @@ int write(const char* source, const char* destination)
     char buffer[BUFFER_SIZE];
     size_t bytes;
 
-    while ((bytes = fread(buffer, 1, BUFFER_SIZE, src)) > 0)
-    {
-        if (fwrite(buffer, 1, bytes, dst) != bytes)
-        {
+    while ((bytes = fread(buffer, 1, BUFFER_SIZE, src)) > 0) {
+        if (fwrite(buffer, 1, bytes, dst) != bytes) {
             perror("Write error");
             fclose(src);
             fclose(dst);
@@ -60,63 +54,53 @@ int write(const char* source, const char* destination)
     return 0;
 }
 
-int main(int argc, char* argv[])
-{
-    if (argc != 2)
-    {
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
         fprintf(stderr, "Usage: %s [options]\n", argv[0]);
-        printf("\ttri\n\ttex_tri\n\trot_tri\n\tidx_squ\n");
+        printf("\ttri\n\ttex_tri\n\trot_tri\n\tidx_tri\ndino_game\ncube\ncon\n");
         return 1;
     }
 
-    if (strcmp(argv[1], "tri") == 0)
-    {
-        write("triangle/vertexShader.glsl", ".");
-        write("triangle/fragmentShader.glsl", ".");
+    if (strcmp(argv[1], "tri") == 0) {
+        write("triangle/vertex.shader", ".");
+        write("triangle/fragment.shader", ".");
         write("triangle/main.c", ".");
     }
-    else if (strcmp(argv[1], "tex_tri") == 0)
-    {
-        write("textured_triangle/vertexShader.glsl", ".");
-        write("textured_triangle/fragmentShader.glsl", ".");
+    else if (strcmp(argv[1], "tex_tri") == 0) {
+        write("textured_triangle/vertex.shader", ".");
+        write("textured_triangle/fragment.shader", ".");
         write("textured_triangle/main.c", ".");
     
     }
-    else if (strcmp(argv[1], "rot_tri") == 0)
-    {
-        write("rotating_triangle/vertexShader.glsl", ".");
-        write("rotating_triangle/fragmentShader.glsl", ".");
+    else if (strcmp(argv[1], "rot_tri") == 0) {
+        write("rotating_triangle/vertex.shader", ".");
+        write("rotating_triangle/fragment.shader", ".");
         write("rotating_triangle/main.c", ".");
     }
-    else if (strcmp(argv[1], "idx_tri") == 0)
-    {
-        write("indexed_triangle/vertexShader.glsl", ".");
-        write("indexed_triangle/fragmentShader.glsl", ".");
+    else if (strcmp(argv[1], "idx_tri") == 0) {
+        write("indexed_triangle/vertex.shader", ".");
+        write("indexed_triangle/fragment.shader", ".");
         write("indexed_triangle/main.c", ".");
     
     }
-    else if (strcmp(argv[1], "glm") == 0)
-    {
-        write("glm/vertexShader.glsl", ".");
-        write("glm/fragmentShader.glsl", ".");
+    else if (strcmp(argv[1], "glm") == 0) {
+        write("glm/vertex.shader", ".");
+        write("glm/fragment.shader", ".");
         write("glm/main.c", ".");
     }
-    else if (strcmp(argv[1], "con") == 0)
-    {
-        write("controls/vertexShader.glsl", ".");
-        write("controls/fragmentShader.glsl", ".");
+    else if (strcmp(argv[1], "con") == 0) {
+        write("controls/vertex.shader", ".");
+        write("controls/fragment.shader", ".");
         write("controls/main.c", ".");
     }
-    else if (strcmp(argv[1], "cube") == 0)
-    {
-        write("cube/vertexShader.glsl", ".");
-        write("cube/fragmentShader.glsl", ".");
+    else if (strcmp(argv[1], "cube") == 0) {
+        write("cube/vertex.shader", ".");
+        write("cube/fragment.shader", ".");
         write("cube/main.c", ".");
     }
-    else if (strcmp(argv[1], "dino") == 0)
-    {
-        write("dino_game/vertexShader.glsl", ".");
-        write("dino_game/fragmentShader.glsl", ".");
+    else if (strcmp(argv[1], "dino_game") == 0) {
+        write("dino_game/vertex.shader", ".");
+        write("dino_game/fragment.shader", ".");
         write("dino_game/main.c", ".");
     }
 

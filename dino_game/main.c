@@ -98,9 +98,9 @@ int main(void) {
         return -1;
     }
 
-    GLuint vertexShader = CreateShader("vertexShader.glsl", GL_VERTEX_SHADER);
+    GLuint vertexShader = CreateShader("vertex.shader", GL_VERTEX_SHADER);
 
-    GLuint fragmentShader = CreateShader("fragmentShader.glsl", GL_FRAGMENT_SHADER);
+    GLuint fragmentShader = CreateShader("fragment.shader", GL_FRAGMENT_SHADER);
 
     GLuint program = CreateProgram(vertexShader, fragmentShader);
 
