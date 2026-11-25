@@ -5,47 +5,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char* ReadShader(const char* filename)
-{
-    FILE* file = fopen(filename, "rb");
-    if (!file)
-    {
-        fprintf(stderr, "Failed to open shader file: %s\n", filename);
-        return NULL;
-    }
+char* read_file(const char* filepath) {
+    FILE* f = fopen(filepath, "rb");
 
-    fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    fseek(f, 0, SEEK_SET);
 
-    char* buffer = (char*)malloc(length + 1);
-    if (!buffer)
-    {
-        fclose(file);
-        fprintf(stderr, "Memory allocation failed for: %s\n", filename);
-        return NULL;
-    }
+    char* buffer = (char*)malloc(len + 1);
+    fread(buffer, 1, len, f);
+    buffer[len] = '\0';
 
-    size_t read_length = fread(buffer, 1, length, file);
-    buffer[read_length] = '\0';
-
-    fclose(file);
+    fclose(len);
     return buffer;
 }
 
-GLuint CompileShader(const char* vertex, const char* fragment)
-{
-    char* vertexSource = ReadShader(vertex);
-    char* fragmentSource = ReadShader(fragment);
-
-    if (!vertexSource || !fragmentSource) return 0;
+GLuint compile_program(const char* vertex, const char* fragment) {
+    
+    char* vsrc = read_file(vertex);
+    char* fsrc = read_file(fragment);
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, (const char**)&vertexSource, NULL);
+    glShaderSource(vertexShader, 1, &vsrc, NULL);
     glCompileShader(vertexShader);
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, (const char**)&fragmentSource, NULL);
+    glShaderSource(fragmentShader, 1, &fsrc, NULL);
     glCompileShader(fragmentShader);
 
     GLuint program = glCreateProgram();
@@ -56,39 +41,24 @@ GLuint CompileShader(const char* vertex, const char* fragment)
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    free(vertexSource);
-    free(fragmentSource);
+    free(vsrc);
+    free(fsrc);
 
     return program;
 }
 
-int main(void)
-{
-    if (!glfwInit())
-    {
-        fprintf(stderr, "Failed to initialize GLFW\n");
-        return -1;
-    }
+int main(void) {
+    glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "game", NULL, NULL);
-    if (!window)
-    {
-        fprintf(stderr, "Failed to create window\n");
-        glfwTerminate();
-        return -1;
-    }
+    GLFWwindow* window = glfwCreateWindow(900, 700, "Cube", NULL, NULL);
 
     glfwMakeContextCurrent(window);
 
-    if (glewInit() != GLEW_OK)
-    {
-        fprintf(stderr, "Failed to initialize GLEW\n");
-        return -1;
-    }
+    glewInit();
 
     glEnable(GL_DEPTH_TEST);
 
-    GLuint shaderProgram = CompileShader("vertex.shader", "fragment.shader");
+    GLuint program = compile_program("vertex.shader", "fragment.shader");
 
     // 36 Vertices for a full 3d cube (xyz position + rgb color)
     float vertices[] = {
@@ -141,12 +111,12 @@ int main(void)
         -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 1.0f
     };
 
-    GLuint vao, vbo;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
+    GLuint VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Position attribute
@@ -157,16 +127,16 @@ int main(void)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    int modelLoc = glGetUniformLocation(shaderProgram, "model");
-    int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    int projLoc = glGetUniformLocation(shaderProgram, "projection");
+    int modelLoc = glGetUniformLocation(program, "model");
+    int viewLoc = glGetUniformLocation(program, "view");
+    int projLoc = glGetUniformLocation(program, "projection");
 
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
+        glUseProgram(program);
 
         // 1. Model: rotate the cube over time
         mat4 model;
@@ -188,7 +158,7 @@ int main(void)
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float*)view);
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, (float*)projection);
 
-        glBindVertexArray(vao);
+        glBindVertexArray(VAO);
         // Draw 36 vertices instead of 3
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -196,9 +166,9 @@ int main(void)
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteProgram(shaderProgram);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(program);
     glfwTerminate();
     
     return 0;

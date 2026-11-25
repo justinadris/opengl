@@ -6,26 +6,17 @@
 #include <string.h>
 
 char* read_file(const char* filepath) {
-    FILE* file = fopen(filepath, "rb");
-    if (!file) {
-        fprintf(stderr, "Could not open file %s\n", filepath);
-        return NULL;
-    }
+    FILE* f = fopen(filepath, "rb");
 
-    fseek(file, 0, SEEK_END);
-    int len = ftell(file);
-    rewind(file);
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    fseek(f, 0, SEEK_SET);
 
     char* buffer = (char*)malloc(len + 1);
-    if (!buffer) {
-        fclose(file);
-        return NULL;
-    }
-
-    fread(buffer, 1, len, file);
+    fread(buffer, 1, len, f);
     buffer[len] = '\0';
     
-    fclose(file);
+    fclose(f);
     return buffer;
 }
 
@@ -37,7 +28,6 @@ GLuint compile_shader(char* source, GLenum type) {
     glCompileShader(shader);
 
     free(src);
-
     return shader;    
 }
 
@@ -64,7 +54,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(750, 750, "Index Buffers", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 800, "Index Buffers", NULL, NULL);
 
     if (!window) {
         glfwTerminate();
@@ -93,17 +83,17 @@ int main() {
     
     GLuint program = compile_program("vertex.shader", "fragment.shader");
     
-    GLuint vao, vbo, ibo;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ibo);
+    GLuint VAO, VBO, IBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &IBO);
 
-    glBindVertexArray(vao);
+    glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -119,7 +109,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(program);        
-        glBindVertexArray(vao);
+        glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
@@ -127,9 +117,9 @@ int main() {
     }
 
     glDeleteProgram(program);
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ibo);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &IBO);
 
     glfwTerminate();
     return 0;

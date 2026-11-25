@@ -8,26 +8,18 @@
 #include "stb_image.h"
 
 char* read_file(const char* filepath) {
-    FILE* file = fopen(filepath, "rb");
-    if (!file) {
-        fprintf(stderr, "Could not open file %s\n", filepath);
-        return NULL;
-    }
+    FILE* f = fopen(filepath, "rb");
 
-    fseek(file, 0, SEEK_END);
-    int len = ftell(file);
-    rewind(file);
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    fseek(f, 0, SEEK_SET);
 
     char* buffer = (char*)malloc(len + 1);
-    if (!buffer) {
-        fclose(file);
-        return NULL;
-    }
-
-    fread(buffer, 1, len, file);
+ 
+    fread(buffer, 1, len, f);
     buffer[len] = '\0';
     
-    fclose(file);
+    fclose(f);
     return buffer;
 }
 
@@ -39,7 +31,6 @@ GLuint compile_shader(char* source, GLenum type) {
     glCompileShader(shader);
 
     free(src);
-
     return shader;    
 }
 
@@ -54,7 +45,6 @@ GLuint compile_program(char* vertexSource, char* fragmentSource) {
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-
     return program;
 }
 
@@ -65,7 +55,7 @@ int main(void) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Textured Triangle", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(900, 700, "Textured Triangle", NULL, NULL);
     glfwMakeContextCurrent(window);
 
     glewInit();
@@ -79,12 +69,12 @@ int main(void) {
          0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f
     };
 
-    GLuint vao, vbo;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
+    GLuint VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     /* position */
@@ -124,12 +114,16 @@ int main(void) {
 
         glUseProgram(program);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glBindVertexArray(vao);
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexBuffers(1, &VBO);
+    glDeleteProgram(program);
 
     glfwTerminate();
     return 0;

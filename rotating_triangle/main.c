@@ -8,26 +8,18 @@
 #include <time.h>
 
 char* read_file(const char* filepath) {
-    FILE* file = fopen(filepath, "rb");
-    if (!file) {
-        fprintf(stderr, "Could not open file %s\n", filepath);
-        return NULL;
-    }
+    FILE* f = fopen(filepath, "rb"); 
 
-    fseek(file, 0, SEEK_END);
-    int len = ftell(file);
-    rewind(file);
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    rewind(f);
 
     char* buffer = (char*)malloc(len + 1);
-    if (!buffer) {
-        fclose(file);
-        return NULL;
-    }
 
-    fread(buffer, 1, len, file);
+    fread(buffer, 1, len, f);
     buffer[len] = '\0';
     
-    fclose(file);
+    fclose(f);
     return buffer;
 }
 
@@ -61,19 +53,11 @@ GLuint compile_program(char* vertexSource, char* fragmentSource) {
 int main() {
     glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "window", NULL, NULL);
-    if (!window)
-    {
-        printf("failed to create window\n");
-        return 1;
-    }
-
+    GLFWwindow* window = glfwCreateWindow(900, 700, "window", NULL, NULL);
+    
     glfwMakeContextCurrent(window);
 
-    if (glewInit() != GLEW_OK) {
-        printf("failed to initialize glew\n");
-        return 1;
-    }
+    glewInit();
 
     GLuint program = compile_program("vertex.shader", "fragment.shader");
 
@@ -83,17 +67,16 @@ int main() {
         0.5f, -0.5f, 0.0f 
     };
 
-    GLuint vao, vbo;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
+    GLuint VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -106,8 +89,7 @@ int main() {
         float sinA = sinf(angle);
 
         // 4x4 rotation matrix around Z
-        float transform[16] = 
-        {
+        float transform[16] = {
             cosA, -sinA, 0.0f, 0.0f,
             sinA,  cosA, 0.0f, 0.0f,
             0.0f,  0.0f, 1.0f, 0.0f,
@@ -120,15 +102,15 @@ int main() {
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, transform);
 
         // Draw triangle
-        glBindVertexArray(vao);
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     glDeleteProgram(program);
     glfwTerminate();
 }

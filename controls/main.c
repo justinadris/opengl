@@ -5,19 +5,19 @@
 #include <stdio.h>
 #include <string.h>
 
-char* read_file(char* filename) {
-    FILE* file = fopen(filename, "rb");
+char* read_file(char* filepath) {
+    FILE* f = fopen(filepath, "rb");
 
-    fseek(file, 0, SEEK_END);
-    size_t len = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    fseek(f, 0, SEEK_SET);
 
-    char* contents = malloc(len + 1);
-    fread(contents, 1, len, file);
-    contents[len] = '\0';
+    char* buffer = malloc(len + 1);
+    fread(buffer, 1, len, f);
+    buffer[len] = '\0';
     
-    fclose(file);
-    return contents;
+    fclose(f);
+    return buffer;
 }
 
 GLuint compile_shader(char* source, GLenum type) {
@@ -70,7 +70,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Controls", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(900, 700, "Controls", NULL, NULL);
     glfwMakeContextCurrent(window);
 
     glewExperimental = GL_TRUE;
@@ -111,6 +111,10 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(program);
 
     glfwTerminate();
     return 0;

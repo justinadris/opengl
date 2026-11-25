@@ -5,45 +5,29 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-char* ReadFile(const char* filename) {
-    FILE* file = fopen(filename, "rb");
-    if (!file) {
-        fprintf(stderr, "Failed to open file: %s\n", filename);
-        return NULL;
-    }
+char* ReadFile(const char* filepath) {
+    FILE* f = fopen(filepath, "rb");
 
-    fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    fseek(f, 0, SEEK_END);
+    size_t len = ftell(f);
+    fseek(f, 0, SEEK_SET);
 
-    char* buffer = (char*)malloc(length + 1);
-    if (!buffer) {
-        fclose(file);
-        fprintf(stderr, "Failed to allocate memory for: %s\n", filename);
-        return NULL;
-    }
+    char* buffer = (char*)malloc(len + 1);
+    fread(buffer, 1, len, f);
+    buffer[len] = '\0'; 
 
-    size_t read_length = fread(buffer, 1, length, file);
-    buffer[read_length] = '\0'; 
-
-    fclose(file);
+    fclose(f);
     return buffer;
 }
 
 GLuint CreateShader(const char* filename, GLuint shaderType) {
     char* shaderSource = ReadFile(filename);
-    if (!shaderSource)  {
-        return 0; /* Failed to load source */
-    }
-
     GLuint shader = glCreateShader(shaderType);
 
     glShaderSource(shader, 1, (const char**)&shaderSource, NULL);
     glCompileShader(shader);
 
-    /* Free the buffer allocated in ReadFile */
     free(shaderSource);
-
     return shader;
 }
 
@@ -52,12 +36,10 @@ GLuint CreateProgram(GLuint vertex, GLuint fragment) {
 
     glAttachShader(program, vertex);
     glAttachShader(program, fragment);
-
     glLinkProgram(program);
 
     glDeleteShader(vertex);
     glDeleteShader(fragment);
-
     return program;
 }
 
@@ -78,28 +60,15 @@ bool CheckCollision(GameObject a, GameObject b) {
 }
 
 int main(void) {
-    if (!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
-        return -1;
-    }
+    glfwInit();
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Dino game", NULL, NULL);
-        
-    if (!window) {
-        fprintf(stderr, "Failed to create GLFW window\n");
-        glfwTerminate();
-        return -1;
-    }
+    GLFWwindow* window = glfwCreateWindow(900, 700, "Dino game", NULL, NULL);
 
     glfwMakeContextCurrent(window);
 
-    if (glewInit() != GLEW_OK) {
-        fprintf(stderr, "Failed to initialize GLEW\n");
-        return -1;
-    }
-
+    glewInit();
+   
     GLuint vertexShader = CreateShader("vertex.shader", GL_VERTEX_SHADER);
-
     GLuint fragmentShader = CreateShader("fragment.shader", GL_FRAGMENT_SHADER);
 
     GLuint program = CreateProgram(vertexShader, fragmentShader);
@@ -114,15 +83,15 @@ int main(void) {
         0.0f, 1.0f
     };
 
-    GLuint vao;
-    GLuint vbo;
+    GLuint VAO;
+    GLuint VBO;
 
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
-    glBindVertexArray(vao);
+    glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -212,7 +181,7 @@ int main(void) {
 
         glUseProgram(program);
 
-        glBindVertexArray(vao);
+        glBindVertexArray(VAO);
 
         // Draw Dino
         glUniform2f(offsetLocation, dino.x, dino.y);
@@ -231,8 +200,8 @@ int main(void) {
         glfwSwapBuffers(window);
     }
 
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     glDeleteProgram(program);
 
     glfwTerminate();
